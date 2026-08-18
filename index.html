@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif: Deret Aritmetika & Geometri</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- KaTeX for Math Formatting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-slate-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base sm:text-lg tracking-tight leading-tight">Kuis Deret Matematika</h1>
+                        <p class="text-[11px] text-slate-400">15 Soal Aritmetika & Geometri ($S_n$)</p>
+                    </div>
+                </div>
+
+                <!-- Timer & Action Controls -->
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <div id="timer-badge" class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs font-mono font-semibold text-blue-400">
+                        <i class="fa-regular fa-clock text-blue-400"></i>
+                        <span id="timer-display">00:00</span>
+                    </div>
+
+                    <button onclick="openHistoryModal()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-semibold text-slate-200 transition flex items-center gap-1.5" title="Lihat Riwayat Kuis">
+                        <i class="fa-solid fa-history text-amber-400"></i>
+                        <span class="hidden sm:inline">Riwayat</span>
+                    </button>
+
+                    <button onclick="confirmResetQuiz()" class="px-3 py-1.5 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/50 rounded-xl text-xs font-semibold text-rose-300 transition flex items-center gap-1.5" title="Reset Ulang Kuis">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span class="hidden sm:inline">Reset</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+        <!-- QUIZ VIEW CONTAINER -->
+        <div id="quiz-view" class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            <!-- LEFT/TOP: QUESTION PALETTE & PROGRESS -->
+            <div class="lg:col-span-1 order-2 lg:order-1 space-y-6">
+                <!-- Progress Box -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-600 mb-2">
+                        <span>Kemajuan Kuis</span>
+                        <span id="progress-text" class="text-blue-600 font-mono">0 / 15 Terjawab</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Number Palette -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center justify-between">
+                        <span>Navigasi Soal</span>
+                        <i class="fa-solid fa-grip text-slate-400"></i>
+                    </h3>
+                    <div class="grid grid-cols-5 gap-2.5" id="nav-grid">
+                        <!-- Generated via JS -->
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-3 text-[11px] text-slate-600">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-md bg-blue-600"></span>
+                            <span>Aktif</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-md bg-emerald-500"></span>
+                            <span>Terjawab</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-md border border-slate-300 bg-slate-50"></span>
+                            <span>Belum</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button Card -->
+                <div class="bg-gradient-to-br from-blue-900 to-indigo-900 p-5 rounded-2xl text-white shadow-md">
+                    <h4 class="font-bold text-sm mb-1">Selesai Mengerjakan?</h4>
+                    <p class="text-xs text-blue-200 mb-4 leading-relaxed">Periksa kembali jawabanmu sebelum mengirimkan kuis.</p>
+                    <button onclick="confirmSubmitQuiz()" class="w-full py-2.5 px-4 bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs rounded-xl shadow-lg transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Kirim & Lihat Hasil</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT/MAIN: ACTIVE QUESTION CARD -->
+            <div class="lg:col-span-3 order-1 lg:order-2">
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 flex flex-col justify-between min-h-[480px]">
+                    <div>
+                        <!-- Header Question Info -->
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                            <div class="flex items-center gap-2">
+                                <span id="q-number-badge" class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-extrabold rounded-lg">Soal 1 dari 15</span>
+                                <span id="q-category-badge" class="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg">Deret Aritmetika</span>
+                            </div>
+                            <span class="text-xs text-slate-400 font-medium hidden sm:inline"><i class="fa-regular fa-circle-question mr-1"></i>Pilih 1 Jawaban Terbaik</span>
+                        </div>
+
+                        <!-- Question Text -->
+                        <div class="mb-8">
+                            <h2 id="q-text" class="text-slate-900 font-bold text-base sm:text-lg leading-relaxed">
+                                Loading soal...
+                            </h2>
+                        </div>
+
+                        <!-- Options Container -->
+                        <div class="space-y-3" id="options-container">
+                            <!-- Options injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Navigation Footer -->
+                    <div class="flex items-center justify-between border-t border-slate-100 pt-6 mt-8">
+                        <button id="prev-btn" onclick="navigateQuestion(-1)" class="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold text-slate-700 text-xs transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-chevron-left"></i>
+                            <span>Sebelumnya</span>
+                        </button>
+
+                        <div class="text-xs text-slate-400 font-medium">
+                            <span id="current-q-indicator">1</span> / 15
+                        </div>
+
+                        <button id="next-btn" onclick="navigateQuestion(1)" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2">
+                            <span>Selanjutnya</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RESULT VIEW CONTAINER (HIDDEN INITIALLY) -->
+        <div id="result-view" class="hidden space-y-8">
+            <!-- Summary Banner -->
+            <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-blue-600/10 rounded-full blur-3xl"></div>
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div class="text-center md:text-left space-y-2">
+                        <span id="score-status-badge" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full text-xs font-bold uppercase tracking-wider">
+                            Hasil Kuis Diterima
+                        </span>
+                        <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight">Ringkasan Nilai Kamu</h2>
+                        <p id="score-feedback-text" class="text-slate-300 text-xs sm:text-sm max-w-xl">
+                            Kerja bagus! Mari kita evaluasi hasil pengerjaanmu di bawah ini.
+                        </p>
+                    </div>
+
+                    <!-- Score Card Circle -->
+                    <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-2xl text-center min-w-[200px] shadow-lg">
+                        <span class="text-xs text-slate-400 font-bold uppercase block mb-1">Skor Akhir</span>
+                        <div id="final-score-val" class="text-5xl font-extrabold text-emerald-400 font-mono tracking-tight">0</div>
+                        <span class="text-[11px] text-slate-400 block mt-1" id="score-percentage-val">0% Akurasi</span>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-800 text-center text-xs">
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block">Benar</span>
+                        <span id="stat-correct" class="text-lg font-bold text-emerald-400 font-mono">0</span>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block">Salah</span>
+                        <span id="stat-wrong" class="text-lg font-bold text-rose-400 font-mono">0</span>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block">Tidak Diisi</span>
+                        <span id="stat-unanswered" class="text-lg font-bold text-amber-400 font-mono">0</span>
+                    </div>
+                    <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block">Waktu Pengerjaan</span>
+                        <span id="stat-time" class="text-lg font-bold text-blue-400 font-mono">00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-blue-600"></i>
+                    Pembahasan Detail 15 Soal
+                </h3>
+                <div class="flex items-center gap-3">
+                    <button onclick="retakeQuiz()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Coba Lagi Kuis</span>
+                    </button>
+                    <button onclick="openHistoryModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-history"></i>
+                        <span>Lihat Riwayat</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detailed Breakdown List -->
+            <div id="breakdown-container" class="space-y-4">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal History -->
+    <div id="history-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-history"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">Riwayat Hasil Kuis</h3>
+                        <p class="text-xs text-slate-500">Tersimpan di penyimpanan lokal browsermu</p>
+                    </div>
+                </div>
+                <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600 text-lg p-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- History List Table -->
+            <div class="max-h-72 overflow-y-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                            <th class="p-3">Tanggal & Waktu</th>
+                            <th class="p-3 text-center">Skor</th>
+                            <th class="p-3 text-center">Benar / Total</th>
+                            <th class="p-3 text-right">Durasi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+                <div id="history-empty" class="text-center py-8 text-xs text-slate-400 hidden">
+                    <i class="fa-regular fa-folder-open text-2xl mb-2 block"></i>
+                    Belum ada riwayat kuis tersimpan.
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-slate-100 pt-4">
+                <button onclick="clearHistory()" class="px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-semibold transition">
+                    <i class="fa-solid fa-trash-can mr-1.5"></i>Hapus Semua Riwayat
+                </button>
+                <button onclick="closeHistoryModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500 mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Modul Kuis Interaktif Matematika SMP & SMA: Deret Aritmetika dan Geometri ($S_n$)</p>
+        </div>
+    </footer>
+
+    <!-- QUIZ ENGINE SCRIPT -->
+    <script>
+        // 15 Comprehensive Questions Data
+        const questionsData = [
+            {
+                id: 1,
+                category: "Deret Aritmetika",
+                question: "Diketahui deret aritmetika dengan suku pertama $a = 3$ dan beda $b = 4$. Berapakah jumlah 10 suku pertama ($S_{10}$) deret tersebut?",
+                options: [
+                    "200",
+                    "210",
+                    "220",
+                    "230"
+                ],
+                correctIndex: 1, // 210
+                explanation: "Gunakan rumus $S_n = \\frac{n}{2}[2a + (n-1)b]$. Dengan $a=3$, $b=4$, $n=10$:\n$$S_{10} = \\frac{10}{2}[2(3) + (10-1)4] = 5 \\times [6 + 36] = 5 \\times 42 = 210$$"
+            },
+            {
+                id: 2,
+                category: "Deret Aritmetika",
+                question: "Hitunglah hasil penjumlahan 15 suku pertama dari deret aritmetika: $2 + 5 + 8 + 11 + \\dots$",
+                options: [
+                    "330",
+                    "345",
+                    "360",
+                    "375"
+                ],
+                correctIndex: 1, // 345
+                explanation: "Diketahui $a = 2$, beda $b = 5 - 2 = 3$, dan $n = 15$.\n$$S_{15} = \\frac{15}{2}[2(2) + (15-1)3] = 7,5 \\times [4 + 42] = 7,5 \\times 46 = 345$$"
+            },
+            {
+                id: 3,
+                category: "Deret Aritmetika",
+                question: "Suatu deret aritmetika memiliki suku pertama $U_1 = 7$ dan suku ke-5 $U_5 = 19$. Berapakah jumlah 8 suku pertama ($S_8$) deret tersebut?",
+                options: [
+                    "120",
+                    "130",
+                    "140",
+                    "150"
+                ],
+                correctIndex: 2, // 140
+                explanation: "Cari beda ($b$) terlebih dahulu: $U_5 = a + 4b \\implies 7 + 4b = 19 \\implies 4b = 12 \\implies b = 3$.\nLalu hitung $S_8$:\n$$S_8 = \\frac{8}{2}[2(7) + (8-1)3] = 4 \\times [14 + 21] = 4 \\times 35 = 140$$"
+            },
+            {
+                id: 4,
+                category: "Deret Geometri (r > 1)",
+                question: "Tentukan jumlah 6 suku pertama ($S_6$) dari deret geometri berikut: $2 + 6 + 18 + 54 + \\dots$",
+                options: [
+                    "728",
+                    "729",
+                    "730",
+                    "726"
+                ],
+                correctIndex: 0, // 728
+                explanation: "Suku pertama $a = 2$, rasio $r = \\frac{6}{2} = 3$ (karena $r > 1$, gunakan $S_n = \\frac{a(r^n - 1)}{r - 1}$).\n$$S_6 = \\frac{2(3^6 - 1)}{3 - 1} = \\frac{2(729 - 1)}{2} = 728$$"
+            },
+            {
+                id: 5,
+                category: "Deret Geometri (r > 1)",
+                question: "Dalam suatu deret geometri diketahui suku pertama $a = 5$ dan rasio $r = 2$. Jumlah 8 suku pertamanya ($S_8$) adalah...",
+                options: [
+                    "1.275",
+                    "1.280",
+                    "1.250",
+                    "1.300"
+                ],
+                correctIndex: 0, // 1275
+                explanation: "Gunakan rumus $S_n = \\frac{a(r^n - 1)}{r - 1}$:\n$$S_8 = \\frac{5(2^8 - 1)}{2 - 1} = \\frac{5(256 - 1)}{1} = 5 \\times 255 = 1.275$$"
+            },
+            {
+                id: 6,
+                category: "Deret Geometri (r < 1)",
+                question: "Hitunglah jumlah 6 suku pertama ($S_6$) dari deret geometri berkurang: $64 + 32 + 16 + 8 + \\dots$",
+                options: [
+                    "120",
+                    "124",
+                    "126",
+                    "127"
+                ],
+                correctIndex: 2, // 126
+                explanation: "Suku pertama $a = 64$, rasio $r = \\frac{32}{64} = \\frac{1}{2}$. Karena $r < 1$, gunakan rumus $S_n = \\frac{a(1 - r^n)}{1 - r}$:\n$$S_6 = \\frac{64(1 - (\\frac{1}{2})^6)}{1 - \\frac{1}{2}} = \\frac{64(1 - \\frac{1}{64})}{\\frac{1}{2}} = \\frac{63}{\\frac{1}{2}} = 63 \\times 2 = 126$$"
+            },
+            {
+                id: 7,
+                category: "Deret Geometri (r < 1)",
+                question: "Jumlah 5 suku pertama ($S_5$) dari deret geometri $81 + 27 + 9 + 3 + \\dots$ adalah...",
+                options: [
+                    "120",
+                    "121",
+                    "122",
+                    "123"
+                ],
+                correctIndex: 1, // 121
+                explanation: "$a = 81$, $r = \\frac{27}{81} = \\frac{1}{3}$.\n$$S_5 = \\frac{81(1 - (\\frac{1}{3})^5)}{1 - \\frac{1}{3}} = \\frac{81(1 - \\frac{1}{243})}{\\frac{2}{3}} = \\frac{81 \\times \\frac{242}{243}}{\\frac{2}{3}} = \\frac{81}{\\frac{2}{3}} \\times \\frac{242}{243} = 121,5 \\times 0,9958 = 121$$"
+            },
+            {
+                id: 8,
+                category: "Soal Cerita Aritmetika",
+                question: "Budi menabung setiap bulan. Bulan pertama Rp 20.000, bulan kedua Rp 25.000, bulan ketiga Rp 30.000, dan seterusnya selalu bertambah Rp 5.000. Total tabungan Budi setelah 12 bulan (1 tahun) adalah...",
+                options: [
+                    "Rp 540.000",
+                    "Rp 570.000",
+                    "Rp 600.000",
+                    "Rp 630.000"
+                ],
+                correctIndex: 1, // Rp 570.000
+                explanation: "Ini kasus Deret Aritmetika: $a = 20.000$, $b = 5.000$, $n = 12$.\n$$S_{12} = \\frac{12}{2}[2(20.000) + (12-1)5.000] = 6 \\times [40.000 + 55.000] = 6 \\times 95.000 = \\text{Rp } 570.000$$"
+            },
+            {
+                id: 9,
+                category: "Soal Cerita Aritmetika",
+                question: "Dalam gedung pertunjukan, baris kursi terdepan berisi 15 kursi. Baris di belakangnya selalu bertambah 4 kursi. Jika terdapat 10 baris kursi di gedung tersebut, berapa total kapasitas seluruh kursi penonton?",
+                options: [
+                    "300 Kursi",
+                    "315 Kursi",
+                    "330 Kursi",
+                    "345 Kursi"
+                ],
+                correctIndex: 2, // 330
+                explanation: "Deret Aritmetika: $a = 15$, $b = 4$, $n = 10$.\n$$S_{10} = \\frac{10}{2}[2(15) + (10-1)4] = 5 \\times [30 + 36] = 5 \\times 66 = 330 \\text{ kursi}$$"
+            },
+            {
+                id: 10,
+                category: "Soal Cerita Geometri",
+                question: "Seutas tali dipotong menjadi 5 bagian membentuk barisan geometri. Potongan paling panjang ($a$) adalah 160 cm, dan setiap potongan berikutnya berukuran $\\frac{1}{2}$ dari potongan sebelumnya. Berapakah panjang tali mula-mula?",
+                options: [
+                    "300 cm",
+                    "310 cm",
+                    "320 cm",
+                    "330 cm"
+                ],
+                correctIndex: 1, // 310 cm
+                explanation: "Deret Geometri dengan $a = 160$, $r = \\frac{1}{2}$, $n = 5$.\n$$S_5 = \\frac{160(1 - (\\frac{1}{2})^5)}{1 - \\frac{1}{2}} = \\frac{160(1 - \\frac{1}{32})}{\\frac{1}{2}} = 320 \\times \\frac{31}{32} = 310 \\text{ cm}$$"
+            },
+            {
+                id: 11,
+                category: "Deret Aritmetika",
+                question: "Diketahui suatu deret aritmetika memiliki suku pertama $a = 12$ dan beda $b = -2$ (deret berkurang). Berapakah jumlah 10 suku pertama ($S_{10}$) deret tersebut?",
+                options: [
+                    "30",
+                    "40",
+                    "50",
+                    "60"
+                ],
+                correctIndex: 0, // 30
+                explanation: "Gunakan rumus $S_n = \\frac{n}{2}[2a + (n-1)b]$ dengan $b = -2$:\n$$S_{10} = \\frac{10}{2}[2(12) + (10-1)(-2)] = 5 \\times [24 - 18] = 5 \\times 6 = 30$$"
+            },
+            {
+                id: 12,
+                category: "Rumus Sn Aritmetika",
+                question: "Jumlah $n$ suku pertama suatu deret aritmetika dirumuskan dengan $S_n = 2n^2 + 3n$. Berapakah nilai suku ke-5 ($U_5$) deret tersebut?",
+                options: [
+                    "17",
+                    "19",
+                    "21",
+                    "23"
+                ],
+                correctIndex: 2, // 21
+                explanation: "Ingat hubungan $U_n = S_n - S_{n-1}$. Jadi $U_5 = S_5 - S_4$.\n$S_5 = 2(5)^2 + 3(5) = 2(25) + 15 = 65$\n$S_4 = 2(4)^2 + 3(4) = 2(16) + 12 = 44$\n$$U_5 = 65 - 44 = 21$$"
+            },
+            {
+                id: 13,
+                category: "Deret Geometri",
+                question: "Berapakah hasil penjumlahan 5 suku pertama ($S_5$) dari deret geometri penggandaan: $3 + 6 + 12 + 24 + 48$?",
+                options: [
+                    "87",
+                    "90",
+                    "93",
+                    "96"
+                ],
+                correctIndex: 2, // 93
+                explanation: "$a = 3$, $r = 2$, $n = 5$.\n$$S_5 = \\frac{3(2^5 - 1)}{2 - 1} = 3 \\times (32 - 1) = 3 \\times 31 = 93$$"
+            },
+            {
+                id: 14,
+                category: "Deret Geometri (Pecahan)",
+                question: "Hitunglah nilai dari deret geometri: $100 + 50 + 25 + 12,5$ ($S_4$)",
+                options: [
+                    "175",
+                    "182,5",
+                    "187,5",
+                    "190"
+                ],
+                correctIndex: 2, // 187.5
+                explanation: "Penjumlahan langsung 4 suku: $100 + 50 + 25 + 12,5 = 187,5$.\nAtau via rumus: $a=100, r=0,5 \\implies S_4 = \\frac{100(1 - 0,0625)}{0,5} = 200 \\times 0,9375 = 187,5$."
+            },
+            {
+                id: 15,
+                category: "Deret Aritmetika Dasar",
+                question: "Berapakah jumlah dari 20 bilangan asli pertama ($1 + 2 + 3 + 4 + \\dots + 20$)?",
+                options: [
+                    "190",
+                    "200",
+                    "210",
+                    "220"
+                ],
+                correctIndex: 2, // 210
+                explanation: "Ini adalah deret aritmetika dengan $a = 1$, $b = 1$, $n = 20$.\n$$S_{20} = \\frac{20}{2}(a + U_{20}) = 10 \\times (1 + 20) = 10 \\times 21 = 210$$"
+            }
+        ];
+
+        // State variables
+        let currentIndex = 0;
+        let userAnswers = new Array(questionsData.length).fill(null);
+        let timerSeconds = 0;
+        let timerInterval = null;
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            initPalette();
+            loadQuestion(0);
+            startTimer();
+            renderMath();
+        });
+
+        // Start Quiz Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').textContent = `${mins}:${secs}`;
+        }
+
+        // Initialize Number Palette
+        function initPalette() {
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = '';
+            questionsData.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `palette-btn-${idx}`;
+                btn.onclick = () => jumpToQuestion(idx);
+                btn.className = getPaletteBtnClass(idx);
+                btn.textContent = idx + 1;
+                grid.appendChild(btn);
+            });
+        }
+
+        function getPaletteBtnClass(idx) {
+            const base = "h-9 w-full rounded-xl font-bold text-xs flex items-center justify-center transition shadow-sm ";
+            if (idx === currentIndex) {
+                return base + "bg-blue-600 text-white ring-2 ring-blue-400 ring-offset-2";
+            } else if (userAnswers[idx] !== null) {
+                return base + "bg-emerald-500 text-white hover:bg-emerald-600";
+            } else {
+                return base + "bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100";
+            }
+        }
+
+        function updatePalette() {
+            questionsData.forEach((_, idx) => {
+                const btn = document.getElementById(`palette-btn-${idx}`);
+                if (btn) btn.className = getPaletteBtnClass(idx);
+            });
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const percentage = (answeredCount / questionsData.length) * 100;
+            document.getElementById('progress-text').textContent = `${answeredCount} / ${questionsData.length} Terjawab`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+        }
+
+        // Load Question Content
+        function loadQuestion(index) {
+            currentIndex = index;
+            const q = questionsData[index];
+
+            document.getElementById('q-number-badge').textContent = `Soal ${index + 1} dari ${questionsData.length}`;
+            document.getElementById('q-category-badge').textContent = q.category;
+            document.getElementById('q-text').innerHTML = q.question;
+            document.getElementById('current-q-indicator').textContent = index + 1;
+
+            // Render options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const optionLabels = ['A', 'B', 'C', 'D'];
+            q.options.forEach((optText, optIdx) => {
+                const isSelected = userAnswers[index] === optIdx;
+                const optBtn = document.createElement('button');
+                optBtn.onclick = () => selectOption(optIdx);
+                optBtn.className = `w-full text-left p-4 rounded-2xl border-2 transition flex items-start gap-3.5 ${
+                    isSelected 
+                    ? 'border-blue-600 bg-blue-50/80 text-blue-900 font-bold shadow-sm' 
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 text-slate-800 font-medium'
+                }`;
+
+                optBtn.innerHTML = `
+                    <div class="w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
+                        isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                    }">${optionLabels[optIdx]}</div>
+                    <div class="text-sm pt-0.5 leading-relaxed flex-1">${optText}</div>
+                `;
+                container.appendChild(optBtn);
+            });
+
+            // Update Navigation Buttons
+            document.getElementById('prev-btn').disabled = (index === 0);
+            const nextBtn = document.getElementById('next-btn');
+            if (index === questionsData.length - 1) {
+                nextBtn.innerHTML = `<span>Selesai</span> <i class="fa-solid fa-check"></i>`;
+            } else {
+                nextBtn.innerHTML = `<span>Selanjutnya</span> <i class="fa-solid fa-chevron-right"></i>`;
+            }
+
+            updatePalette();
+            renderMath();
+        }
+
+        function selectOption(optIdx) {
+            userAnswers[currentIndex] = optIdx;
+            loadQuestion(currentIndex);
+        }
+
+        function navigateQuestion(direction) {
+            const target = currentIndex + direction;
+            if (target >= 0 && target < questionsData.length) {
+                loadQuestion(target);
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            loadQuestion(idx);
+        }
+
+        function confirmResetQuiz() {
+            if (confirm("Apakah kamu yakin ingin mereset ulang kuis? Seluruh jawaban saat ini akan dihapus.")) {
+                userAnswers.fill(null);
+                currentIndex = 0;
+                loadQuestion(0);
+                startTimer();
+                document.getElementById('quiz-view').classList.remove('hidden');
+                document.getElementById('result-view').classList.add('hidden');
+            }
+        }
+
+        function confirmSubmitQuiz() {
+            const unanswered = userAnswers.filter(a => a === null).length;
+            let msg = "Apakah kamu yakin ingin menyelesaikan kuis ini?";
+            if (unanswered > 0) {
+                msg = `Masih ada ${unanswered} soal yang belum kamu jawab. Yakin ingin mengirimkan sekarang?`;
+            }
+
+            if (confirm(msg)) {
+                submitQuiz();
+            }
+        }
+
+        // Submit and Process Quiz Results
+        function submitQuiz() {
+            clearInterval(timerInterval);
+
+            let correctCount = 0;
+            let wrongCount = 0;
+            let unansweredCount = 0;
+
+            questionsData.forEach((q, idx) => {
+                const ans = userAnswers[idx];
+                if (ans === null) {
+                    unansweredCount++;
+                } else if (ans === q.correctIndex) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+            });
+
+            const score = Math.round((correctCount / questionsData.length) * 100);
+
+            // Display Results View
+            document.getElementById('quiz-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+
+            document.getElementById('final-score-val').textContent = score;
+            document.getElementById('score-percentage-val').textContent = `${Math.round((correctCount / questionsData.length) * 100)}% Akurasi`;
+
+            document.getElementById('stat-correct').textContent = correctCount;
+            document.getElementById('stat-wrong').textContent = wrongCount;
+            document.getElementById('stat-unanswered').textContent = unansweredCount;
+
+            const mins = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (timerSeconds % 60).toString().padStart(2, '0');
+            const timeStr = `${mins}:${secs}`;
+            document.getElementById('stat-time').textContent = timeStr;
+
+            // Score Feedback
+            const feedbackElem = document.getElementById('score-feedback-text');
+            const badgeElem = document.getElementById('score-status-badge');
+            if (score >= 80) {
+                badgeElem.className = "px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full text-xs font-bold uppercase tracking-wider";
+                badgeElem.textContent = "Sangat Luar Biasa!";
+                feedbackElem.textContent = "Selamat! Kamu telah menguasai konsep Deret Aritmetika & Geometri dengan sangat baik.";
+            } else if (score >= 60) {
+                badgeElem.className = "px-3 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full text-xs font-bold uppercase tracking-wider";
+                badgeElem.textContent = "Hasil Cukup Baik";
+                feedbackElem.textContent = "Bagus! Kamu sudah memahami sebagian besar konsep deret. Tinjau pembahasan di bawah untuk memperbaiki kesalahan kecil.";
+            } else {
+                badgeElem.className = "px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-bold uppercase tracking-wider";
+                badgeElem.textContent = "Perlu Latihan Lagi";
+                feedbackElem.textContent = "Jangan berkecil hati! Pelajari kembali pembahasan setiap soal di bawah untuk memperkuat pemahaman rumusnya.";
+            }
+
+            // Save Attempt to LocalStorage
+            saveAttemptToHistory(score, correctCount, questionsData.length, timeStr);
+
+            // Render Detailed Breakdown
+            renderBreakdown();
+            renderMath();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Breakdown List
+        function renderBreakdown() {
+            const container = document.getElementById('breakdown-container');
+            container.innerHTML = '';
+
+            const optionLabels = ['A', 'B', 'C', 'D'];
+
+            questionsData.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.correctIndex;
+                const isUnanswered = userAns === null;
+
+                const card = document.createElement('div');
+                card.className = `p-6 rounded-2xl border bg-white shadow-sm transition space-y-4 ${
+                    isCorrect ? 'border-emerald-200' : (isUnanswered ? 'border-amber-200' : 'border-rose-200')
+                }`;
+
+                let statusBadge = '';
+                if (isCorrect) {
+                    statusBadge = `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-md"><i class="fa-solid fa-check mr-1"></i>Benar</span>`;
+                } else if (isUnanswered) {
+                    statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-md"><i class="fa-solid fa-minus mr-1"></i>Tidak Diisi</span>`;
+                } else {
+                    statusBadge = `<span class="px-2.5 py-1 bg-rose-100 text-rose-800 font-bold text-xs rounded-md"><i class="fa-solid fa-xmark mr-1"></i>Salah</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-xs text-slate-500">Soal #${idx + 1}</span>
+                            <span class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded font-medium">${q.category}</span>
+                        </div>
+                        ${statusBadge}
+                    </div>
+
+                    <div class="font-bold text-slate-800 text-sm leading-relaxed">${q.question}</div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <div class="p-3 rounded-xl border ${
+                            userAns === q.correctIndex ? 'bg-emerald-50 border-emerald-200 text-emerald-900 font-semibold' : (isUnanswered ? 'bg-slate-50 border-slate-200 text-slate-500' : 'bg-rose-50 border-rose-200 text-rose-900 font-semibold')
+                        }">
+                            <span class="block text-[10px] text-slate-400 font-bold uppercase mb-0.5">Jawaban Kamu</span>
+                            ${isUnanswered ? '<i>Tidak memilih jawaban</i>' : `Opsi ${optionLabels[userAns]}: ${q.options[userAns]}`}
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-semibold">
+                            <span class="block text-[10px] text-emerald-600 font-bold uppercase mb-0.5">Jawaban Benar</span>
+                            Opsi ${optionLabels[q.correctIndex]}: ${q.options[q.correctIndex]}
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-1.5">
+                        <div class="font-bold text-blue-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                            <span>Langkah Pembahasan:</span>
+                        </div>
+                        <div class="leading-relaxed whitespace-pre-line text-slate-600">${q.explanation}</div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function retakeQuiz() {
+            userAnswers.fill(null);
+            currentIndex = 0;
+            document.getElementById('quiz-view').classList.remove('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            loadQuestion(0);
+            startTimer();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Local Storage History Management
+        const HISTORY_KEY = 'math_deret_quiz_history';
+
+        function getHistory() {
+            try {
+                return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveAttemptToHistory(score, correct, total, duration) {
+            const history = getHistory();
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + 
+                            ' ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            history.unshift({
+                date: dateStr,
+                score: score,
+                correct: correct,
+                total: total,
+                duration: duration
+            });
+
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 15))); // keep last 15
+        }
+
+        function openHistoryModal() {
+            renderHistoryTable();
+            document.getElementById('history-modal').classList.remove('hidden');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        function renderHistoryTable() {
+            const history = getHistory();
+            const tbody = document.getElementById('history-table-body');
+            const emptyMsg = document.getElementById('history-empty');
+
+            tbody.innerHTML = '';
+            if (history.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+            emptyMsg.classList.add('hidden');
+
+            history.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3">${item.date}</td>
+                    <td class="p-3 text-center font-bold font-mono text-emerald-600">${item.score}</td>
+                    <td class="p-3 text-center">${item.correct} / ${item.total}</td>
+                    <td class="p-3 text-right font-mono">${item.duration}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearHistory() {
+            if (confirm("Apakah kamu yakin ingin menghapus seluruh riwayat kuis?")) {
+                localStorage.removeItem(HISTORY_KEY);
+                renderHistoryTable();
+            }
+        }
+
+        // KaTeX Formula Render Helper
+        function renderMath() {
+            setTimeout(() => {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: "$$", right: "$$", display: true},
+                        {left: "$", right: "$", display: false}
+                    ],
+                    throwOnError: false
+                });
+            }, 50);
+        }
+    </script>
+</body>
+</html>
